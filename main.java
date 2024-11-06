@@ -2,13 +2,37 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 class Main {
-  
+  public static Map<Integer, String> makeConditionMap() {
+    HashMap<Integer, String> conditionMap = new HashMap<>();
+
+    // Add the values to the hashmap
+    conditionMap.put(0x0, "EQ");
+    conditionMap.put(0x1, "NE");
+    conditionMap.put(0x2, "HS");
+    conditionMap.put(0x3, "LO");
+    conditionMap.put(0x4, "MI");
+    conditionMap.put(0x5, "PL");
+    conditionMap.put(0x6, "VS");
+    conditionMap.put(0x7, "VC");
+    conditionMap.put(0x8, "HI");
+    conditionMap.put(0x9, "LS");
+    conditionMap.put(0xa, "GE");
+    conditionMap.put(0xb, "LT");
+    conditionMap.put(0xc, "GT");
+    conditionMap.put(0xd, "LE"); 
+
+    return conditionMap;
+  }  
+
   public static Map<Integer, String> makeInstructionMap() {
     Map<Integer, String> instructionMap = new HashMap<>();
+
+
 
     instructionMap.put(0b10001011000, "ADD");
     instructionMap.put(0b1001000100, "ADDI");
@@ -64,12 +88,20 @@ class Main {
     instructionMap.put(0b11101011000, "SUBS");
     instructionMap.put(0b10011010110, "UDIV");
     instructionMap.put(0b10011011110, "UMULH");
+    instructionMap.put(0b01010100, "B.");
     return instructionMap;
   }
 
 
   public static void main(String[] args) throws IOException {
     Map<Integer, String> instructionMap = makeInstructionMap();
+    Map<Integer, String> conditionMap = makeConditionMap();
+    ArrayList<String> strToPrint = new ArrayList<>();
+
+    // Key = line number, Value = label number
+    Map<Integer, Integer> labelMap = new HashMap<>();
+    int labelCount = 0;
+
 
     Path path = Paths.get("./assignment1.legv8asm.machine");
     byte[] fileContents = Files.readAllBytes(path);
@@ -87,48 +119,74 @@ class Main {
 
       InstructionData instruction = new InstructionData(instructions[i]);
       if(instructionMap.containsKey(instruction.op_6)) {
-        // B Type
-        System.out.println("B");
+        String instName = instructionMap.get(instruction.op_6);
+        if(!labelMap.containsKey(i+instruction.BR_address)) {
+          labelCount++;
+          labelMap.put(i+instruction.BR_address, labelCount );
+          // strToPrint.add(i+instruction.C_BR_address, "label_" + labelCount + ":");
+        }
+        strToPrint.add(instName + " label_" + labelMap.get(i+instruction.BR_address ));
       }
+
       else if (instructionMap.containsKey(instruction.op_8)) {
         // CB Type
-        System.out.println("CB");
+        
+        String instName;
+        if(instruction.op_8 == 0b01010100) {
+          instName = ("B."+conditionMap.get(instruction.rd));
+        }
+        else {
+          instName = instructionMap.get(instruction.op_8);
+        }
+        if(!labelMap.containsKey(i+instruction.C_BR_address)) {
+          labelCount++;
+          labelMap.put(i+instruction.C_BR_address, labelCount );
+          // strToPrint.add(i+instruction.C_BR_address, "label_" + labelCount + ":");
+        }
+        strToPrint.add(instName + " label_" + labelMap.get(i+instruction.C_BR_address ));
       }
       else if (instructionMap.containsKey(instruction.op_10)) {
         String instructionString = instructionMap.get(instruction.op_10);
         //I Type
-        System.out.println(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", #" + instruction.aluImmediate);
+        strToPrint.add(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", #" + instruction.aluImmediate);
       }
       else if (instructionMap.containsKey(instruction.op_11)) {
         String instructionString = instructionMap.get(instruction.op_11);
         if(instructionString.charAt(instructionString.length() - 1) == ':') {
+          // D type
           instructionString = instructionString.substring(0, instructionString.length() - 1);
-          System.out.println(instructionString + " X" + instruction.rd + " [X" + instruction.rn + ", #" + instruction.DT_address + "]");
-
+          strToPrint.add(instructionString + " X" + instruction.rd + ", [X" + instruction.rn + ", #" + instruction.DT_address + "]");
         }
         else {
           if("LSL".equals(instructionString) || "LSR".equals(instructionString)) {
-
-            System.out.println(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", #" + instruction.shamt);
+            // R type (Shift)
+            strToPrint.add(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", #" + instruction.shamt);
           }
           else {
-
-            System.out.println(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", X" + instruction.rn);
+            // R type
+            strToPrint.add(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", X" + instruction.rm);
           }
           
         }
 
       }
     }
-    InstructionData test = new InstructionData(instructions[0]);
-    System.out.println(Integer.toBinaryString(test.op_6));
-    System.out.println(Integer.toBinaryString(test.op_8));
-    System.out.println(Integer.toBinaryString(test.op_10));
-    System.out.println(Integer.toBinaryString(test.op_11));
-    System.err.println(Integer.toBinaryString(test.rn));
-    System.err.println(Integer.toBinaryString(test.rm));
-    System.err.println(Integer.toBinaryString(test.rd));
-    System.err.println(Integer.toBinaryString(test.shamt));
+
+    // Add Labels:
+    for (Map.Entry<Integer,Integer> label : labelMap.entrySet()) {
+      if(label.getKey() < strToPrint.size()) {
+        strToPrint.add(label.getKey(), "label_" + label.getValue() + ":");
+      }
+      else {
+
+        strToPrint.add("label_" + label.getValue() + ":");
+      }
+      
+    }
+
+    for(int i = 0; i < strToPrint.size(); i++) {
+      System.out.println(strToPrint.get(i));
+    }  
   }
 }
 
