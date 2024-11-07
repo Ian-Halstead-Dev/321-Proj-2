@@ -62,6 +62,8 @@ class Main {
     instructionMap.put(0b11101011000, "SUBS");
     instructionMap.put(0b11111111110, "DUMP");
     instructionMap.put(0b01010100, "B.");
+    instructionMap.put(0b11111111001, "TIME");
+    instructionMap.put(0b1111001000, "ANDIS");
     return instructionMap;
   }
 
@@ -75,8 +77,12 @@ class Main {
     Map<Integer, Integer> labelMap = new HashMap<>();
     int labelCount = 0;
 
-
-    Path path = Paths.get("./assignment1.legv8asm.machine");
+    Path path;
+    if(args.length >= 1) {
+      path = Paths.get(args[0]);
+    } else {
+      path = Paths.get("./assignment1.legv8asm.machine");
+    }
     byte[] fileContents = Files.readAllBytes(path);
     int[] instructions = new int[fileContents.length / 4];
 
@@ -109,15 +115,21 @@ class Main {
         int convertedC_BR_Address = convertTo2s(instruction.C_BR_address, 19);
         if(instruction.op_8 == 0b01010100) {
           instName = ("B."+conditionMap.get(instruction.rd));
+          if(!labelMap.containsKey(i+convertedC_BR_Address)) {
+            labelCount++;
+            labelMap.put(i+convertedC_BR_Address, labelCount );
+          }
+          strToPrint.add(instName + " label_" + labelMap.get(i+convertedC_BR_Address ));
         }
         else {
           instName = instructionMap.get(instruction.op_8);
+          if(!labelMap.containsKey(i+convertedC_BR_Address)) {
+            labelCount++;
+            labelMap.put(i+convertedC_BR_Address, labelCount );
+          }
+          strToPrint.add(instName + " " + printRegister(instruction.rd)+ ", label_" + labelMap.get(i+convertedC_BR_Address ));
         }
-        if(!labelMap.containsKey(i+convertedC_BR_Address)) {
-          labelCount++;
-          labelMap.put(i+convertedC_BR_Address, labelCount );
-        }
-        strToPrint.add(instName + " label_" + labelMap.get(i+convertedC_BR_Address ));
+
       }
       else if (instructionMap.containsKey(instruction.op_10)) {
         String instructionString = instructionMap.get(instruction.op_10);
@@ -136,7 +148,7 @@ class Main {
               case 0b11010110000 -> // BR
                   strToPrint.add(instructionString + " " + printRegister(instruction.rn));
               case 0b11111111100, 0b11111111110, 0b11111111111 -> strToPrint.add(instructionString);
-              case 0b11111111101 -> strToPrint.add(instructionString + " " + printRegister(instruction.rd));
+              case 0b11111111101, 0b11111111001 -> strToPrint.add(instructionString + " " + printRegister(instruction.rd));
               default -> strToPrint.add(instructionString + " " + printRegister(instruction.rd) + ", " + printRegister(instruction.rn) + ", " + printRegister(instruction.rm));
           }
           
@@ -179,18 +191,17 @@ class Main {
   } 
 
   static String printRegister(int register) {
-    if(register == 31) {
-      return "XZR";
-    }
-    if(register == 28) {
-      return "SP";
-    }
-    if (register == 29) {
-      return "FP";
-    }
-    if(register == 30) {
-      return "LR";
-    }
-    return "X" + register;
+    switch (register) {
+      case 28:
+          return "SP";
+      case 29:
+          return "FP";
+      case 30:
+          return "LR";
+      case 31:
+          return "XZR";
+      default:
+          return "X" + register;
+  }
   }
 }

@@ -28,6 +28,5 @@ public  class InstructionData {
     BR_address = instruction & 0x3FFFFFF;
     C_BR_address = instruction >> 5 & 0x7FFFF;
   }
-
 }
 
