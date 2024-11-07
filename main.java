@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 class Main {
@@ -140,12 +141,12 @@ class Main {
         else {
           instName = instructionMap.get(instruction.op_8);
         }
-        if(!labelMap.containsKey(i+instruction.C_BR_address)) {
+        if(!labelMap.containsKey(i+convertedC_BR_Address)) {
           labelCount++;
-          labelMap.put(i+instruction.C_BR_address, labelCount );
+          labelMap.put(i+convertedC_BR_Address, labelCount );
           // strToPrint.add(i+instruction.C_BR_address, "label_" + labelCount + ":");
         }
-        strToPrint.add(instName + " label_" + labelMap.get(i+instruction.C_BR_address ));
+        strToPrint.add(instName + " label_" + labelMap.get(i+convertedC_BR_Address ));
       }
       else if (instructionMap.containsKey(instruction.op_10)) {
         String instructionString = instructionMap.get(instruction.op_10);
@@ -173,24 +174,23 @@ class Main {
 
       }
     }
-
+    
+    List<Map.Entry<Integer, Integer>> entryList = new ArrayList<>(labelMap.entrySet());
+    entryList.sort(Map.Entry.comparingByKey());
+    
     int count = 0;
-    // Add Labels:
-    for (Map.Entry<Integer,Integer> label : labelMap.entrySet()) {
-      if(label.getKey()+count < strToPrint.size()) {
-        strToPrint.add(label.getKey()+count, "label_" + label.getValue() + ":");
-      }
-      else {
-
-        strToPrint.add("label_" + label.getValue() + ":");
-      }
-      count++;
-      
+    for (Map.Entry<Integer, Integer> label : entryList) {
+        if (label.getKey() + count < strToPrint.size()) {
+            strToPrint.add(label.getKey() + count, "label_" + label.getValue() + ":");
+        } else {
+            strToPrint.add("label_" + label.getValue() + ":");
+        }
+        count++;
     }
-
-    for(int i = 0; i < strToPrint.size(); i++) {
-      System.out.println(strToPrint.get(i));
-    }  
+    
+    for (int i = 0; i < strToPrint.size(); i++) {
+        System.out.println(strToPrint.get(i));
+    }
   }
   
   public static int convertTo2s(int num, int bits) {
