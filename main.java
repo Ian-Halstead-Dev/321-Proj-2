@@ -116,7 +116,6 @@ class Main {
         if(!labelMap.containsKey(i+convertedC_BR_Address)) {
           labelCount++;
           labelMap.put(i+convertedC_BR_Address, labelCount );
-          // strToPrint.add(i+instruction.C_BR_address, "label_" + labelCount + ":");
         }
         strToPrint.add(instName + " label_" + labelMap.get(i+convertedC_BR_Address ));
       }
@@ -127,29 +126,19 @@ class Main {
       }
       else if (instructionMap.containsKey(instruction.op_11)) {
         String instructionString = instructionMap.get(instruction.op_11);
-        if(instruction.op_11 == 0b11111000000 || instruction.op_11 == 0b11111000010) {
-          // D type
-          instructionString = instructionString.substring(0, instructionString.length() - 1);
-          strToPrint.add(instructionString + " " + printRegister(instruction.rd) + ", [" + printRegister(instruction.rn) + ", #" + instruction.DT_address + "]");
-        }
-          else if(instruction.op_11 == 0b11010011011 || instruction.op_11 == 0b11010011010) {
-            // R type (Shift)
-            strToPrint.add(instructionString + " " + printRegister(instruction.rd) + ", " + printRegister(instruction.rn) + ", #" + instruction.shamt);
+          switch (instruction.op_11) {
+              case 0b11111000000, 0b11111000010 -> {
+                  // D type
+                  strToPrint.add(instructionString + " " + printRegister(instruction.rd) + ", [" + printRegister(instruction.rn) + ", #" + instruction.DT_address + "]");
+              }
+              case 0b11010011011, 0b11010011010 -> // R type (Shift)
+                  strToPrint.add(instructionString + " " + printRegister(instruction.rd) + ", " + printRegister(instruction.rn) + ", #" + instruction.shamt);
+              case 0b11010110000 -> // BR
+                  strToPrint.add(instructionString + " " + printRegister(instruction.rn));
+              case 0b11111111100, 0b11111111110, 0b11111111111 -> strToPrint.add(instructionString);
+              case 0b11111111101 -> strToPrint.add(instructionString + " " + printRegister(instruction.rd));
+              default -> strToPrint.add(instructionString + " " + printRegister(instruction.rd) + ", " + printRegister(instruction.rn) + ", " + printRegister(instruction.rm));
           }
-            else if(instruction.op_11 == 0b11010110000) {
-              // BR
-              strToPrint.add(instructionString + " " + printRegister(instruction.rn));
-            }
-            else if(instruction.op_11 == 0b11111111100|| instruction.op_11 == 0b11111111110|| instruction.op_11 == 0b11111111111) {
-              strToPrint.add(instructionString);
-            }
-            else if(instruction.op_11 == 0b11111111101) {
-              strToPrint.add(instructionString + " " + printRegister(instruction.rd));
-            }
-            // R type
-            else {
-              strToPrint.add(instructionString + " " + printRegister(instruction.rd) + ", " + printRegister(instruction.rn) + ", " + printRegister(instruction.rm));
-            }
           
           
         
