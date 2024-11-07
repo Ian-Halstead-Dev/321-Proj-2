@@ -118,12 +118,12 @@ class Main {
     for(int i = 0; i < instructions.length; i++) {
 
       InstructionData instruction = new InstructionData(instructions[i]);
+
       if(instructionMap.containsKey(instruction.op_6)) {
         String instName = instructionMap.get(instruction.op_6);
         if(!labelMap.containsKey(i+instruction.BR_address)) {
           labelCount++;
           labelMap.put(i+instruction.BR_address, labelCount );
-          // strToPrint.add(i+instruction.C_BR_address, "label_" + labelCount + ":");
         }
         strToPrint.add(instName + " label_" + labelMap.get(i+instruction.BR_address ));
       }
@@ -172,15 +172,17 @@ class Main {
       }
     }
 
+    int count = 0;
     // Add Labels:
     for (Map.Entry<Integer,Integer> label : labelMap.entrySet()) {
-      if(label.getKey() < strToPrint.size()) {
-        strToPrint.add(label.getKey(), "label_" + label.getValue() + ":");
+      if(label.getKey()+count < strToPrint.size()) {
+        strToPrint.add(label.getKey()+count, "label_" + label.getValue() + ":");
       }
       else {
 
         strToPrint.add("label_" + label.getValue() + ":");
       }
+      count++;
       
     }
 
@@ -191,3 +193,4 @@ class Main {
 }
 
 // 1001 0001 0010 0000 0010 0011 1110 0000
+// 00010111111111111111111111111111

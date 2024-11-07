@@ -1,294 +1,298 @@
-// Run with stack size of 10000 to make 100 numbers work. Could change both X1 values  at the beginning to around 12 if you dont change the stack size
+// // Run with stack size of 10000 to make 100 numbers work. Could change both X1 values  at the beginning to around 12 if you dont change the stack size
 
-ADDI X0, XZR, #2056
-ADDI X1, XZR, #100
-BL fill_begin
+// ADDI X0, XZR, #2056
+// ADDI X1, XZR, #100
+// BL fill_begin
 
-ADDI X0, XZR, #2056
-ADDI X1, XZR, #100
-BL quicksort_begin
+// ADDI X0, XZR, #2056
+// ADDI X1, XZR, #100
+// BL quicksort_begin
 
-B end
-
-
-// int next_i(int *a, int i, int l, int p)
-// {
-//   while ((i <= l) && (a[i] < p))
-//   {
-//     i++;
-//   }
-
-//   return i;
-// }
-next_i_begin:
-// X0=a, X1=i, X2=l, X3=p
-LSL X9, X1, #3
-ADD X9, X0, X9
-LDUR X9, [X9, #0]
-
-SUBS X10, X1, X2
-B.GT next_i_end
-
-SUBS X10, X9, X3
-B.GE next_i_end
-
-ADDI X1, X1, #1
-B next_i_begin
-
-next_i_end:
-ADDI X0, X1, #0
-BR LR
-
-// int next_j(int *a, int j, int f, int p)
-// {
-//   while ((j > f) && (a[j] >= p))
-//   {
-//     j--;
-//   }
-
-//   return j;
-// }
-next_j_begin:
-// X0=a, X1=j, X2=f, X3=p
-LSL X9, X1, #3
-ADD X9, X9, X0
-LDUR X9, [X9, #0]
-
-SUBS X10, X1, X2
-B.LE next_j_end
-
-SUBS X10, X9, X3
-B.LT next_j_end
-
-SUBI X1, X1, #1
-B next_j_begin
-
-next_j_end:
-ADDI X0, X1, #0
-BR LR
+// B end
 
 
-// void fill(int *a, int n)
-// {
-//   int i;
+// // int next_i(int *a, int i, int l, int p)
+// // {
+// //   while ((i <= l) && (a[i] < p))
+// //   {
+// //     i++;
+// //   }
 
-//   for (i = 0; i < n; i++)
-//   {
-//     a[i] = n - i - 1;
-//   }
-// }
-fill_begin:
-// a = x0, n = X1, X9 = i
-ADDI X9, XZR, #0
+// //   return i;
+// // }
+// next_i_begin:
+// // X0=a, X1=i, X2=l, X3=p
+// LSL X9, X1, #3
+// ADD X9, X0, X9
+// LDUR X9, [X9, #0]
 
-fill_loop:
-SUBS X10, X9, X1
-B.GE fill_loop_end
+// SUBS X10, X1, X2
+// B.GT next_i_end
 
-SUB X11, X1, X9
-SUBI X11, X11, #1
+// SUBS X10, X9, X3
+// B.GE next_i_end
 
-LSL X10, X9, #3
-ADD X10, X0, X10
-STUR X11, [X10, #0]
+// ADDI X1, X1, #1
+// B next_i_begin
 
-ADDI X9, X9, #1
-B fill_loop
+// next_i_end:
+// ADDI X0, X1, #0
+// BR LR
 
-fill_loop_end:
-BR LR
+// // int next_j(int *a, int j, int f, int p)
+// // {
+// //   while ((j > f) && (a[j] >= p))
+// //   {
+// //     j--;
+// //   }
 
-// void swap(int *a, int i, int j)
-// {
-//   int tmp;
+// //   return j;
+// // }
+// next_j_begin:
+// // X0=a, X1=j, X2=f, X3=p
+// LSL X9, X1, #3
+// ADD X9, X9, X0
+// LDUR X9, [X9, #0]
 
-//   tmp = a[i];
-//   a[i] = a[j];
-//   a[j] = tmp;
-// }
-swap_begin:
-LSL X1, X1, #3
-LSL X2, X2, #3
-ADD X1, X0, X1
-ADD X2, X0, X2
-LDUR X9, [X1, #0]
-LDUR X10, [X2, #0]
-STUR X9, [X2, #0]
-STUR X10, [X1, #0]
-BR LR
+// SUBS X10, X1, X2
+// B.LE next_j_end
 
-// void quicksort(int *a, int n)
-// {
-//   quicksort_recurse(a, 0, n - 1);
-// }
-quicksort_begin:
-SUBI SP, SP, #8
-STUR LR, [SP, #0]
-SUBI X2, X1, #1
-ADDI X1, XZR, #0
-BL quicksort_recurse_begin
-LDUR LR, [SP, #0]
-ADDI SP, SP, #8
-BR LR
+// SUBS X10, X9, X3
+// B.LT next_j_end
+
+// SUBI X1, X1, #1
+// B next_j_begin
+
+// next_j_end:
+// ADDI X0, X1, #0
+// BR LR
 
 
-// void quicksort_recurse(int *a, int f, int l)
-// {
-//   int p;
+// // void fill(int *a, int n)
+// // {
+// //   int i;
 
-//   if (f >= l)
-//   {
-//     return;
-//   }
-//    a = X19, f=x20, l=x21, p=x22
-//   p = partition(a, f, l);
-//   quicksort_recurse(a, f, p - 1);
-//   quicksort_recurse(a, p + 1, l);
-// }
-quicksort_recurse_begin:
-// X19=a, X20=f, X21=l, X22=p
-SUBI SP, SP, #40
-STUR X19, [SP, #0]
-STUR X20, [SP, #8]
-STUR X21, [SP, #16]
-STUR X22, [SP, #24]
-STUR LR, [SP, #32]
+// //   for (i = 0; i < n; i++)
+// //   {
+// //     a[i] = n - i - 1;
+// //   }
+// // }
+// fill_begin:
+// // a = x0, n = X1, X9 = i
+// ADDI X9, XZR, #0
 
-ADDI X19, X0, #0
-ADDI X20, X1, #0
-ADDI X21, X2, #0
+// fill_loop:
+// SUBS X10, X9, X1
+// B.GE fill_loop_end
 
-SUBS X9, X20, X21
-B.GE quicksort_recurse_end
+// SUB X11, X1, X9
+// SUBI X11, X11, #1
 
-ADDI X0, X19, #0
-ADDI X1, X20, #0
-ADDI X2, X21, #0
-BL partition_begin
-ADDI X22, X0, #0
+// LSL X10, X9, #3
+// ADD X10, X0, X10
+// STUR X11, [X10, #0]
 
-ADDI X0, X19, #0
-ADDI X1, X20, #0
-SUBI X2, X22, #1
-BL quicksort_recurse_begin
+// ADDI X9, X9, #1
+// B fill_loop
 
-ADDI X0, X19, #0
-ADDI X1, X22, #1
-ADDI X2, X21, #0
-BL quicksort_recurse_begin
+// fill_loop_end:
+// BR LR
 
-quicksort_recurse_end:
-LDUR LR, [SP, #32]
-LDUR X22, [SP, #24]
-LDUR X21, [SP, #16]
-LDUR X20, [SP, #8]
-LDUR X19, [SP, #0]
-ADDI SP, SP, #40
-BR LR
+// // void swap(int *a, int i, int j)
+// // {
+// //   int tmp;
 
-// int partition(int *a, int f, int l)
-// {
-//   int i, j, p, t;
+// //   tmp = a[i];
+// //   a[i] = a[j];
+// //   a[j] = tmp;
+// // }
+// swap_begin:
+// LSL X1, X1, #3
+// LSL X2, X2, #3
+// ADD X1, X0, X1
+// ADD X2, X0, X2
+// LDUR X9, [X1, #0]
+// LDUR X10, [X2, #0]
+// STUR X9, [X2, #0]
+// STUR X10, [X1, #0]
+// BR LR
 
-//   p = a[f];
-//   i = f + 1;
-//   j = l;
-//   // X19=a, X20=f, X21=l, X22=i, X23=j, X24=p, X25=t
-//   while (i <= j)
-//   {
-//     i = next_i(a, i, l, p);
-//     j = next_j(a, j, f, p);
+// // void quicksort(int *a, int n)
+// // {
+// //   quicksort_recurse(a, 0, n - 1);
+// // }
+// quicksort_begin:
+// SUBI SP, SP, #8
+// STUR LR, [SP, #0]
+// SUBI X2, X1, #1
+// ADDI X1, XZR, #0
+// BL quicksort_recurse_begin
+// LDUR LR, [SP, #0]
+// ADDI SP, SP, #8
+// BR LR
 
-//     if (i < j)
-//     {
-//       swap(a, i, j);
-//     }
-//   }
 
-//   if (j != f)
-//   {
-//     swap(a, j, f);
-//   }
+// // void quicksort_recurse(int *a, int f, int l)
+// // {
+// //   int p;
 
-//   return j;
-// }
-partition_begin:
-// X19=a, X20=f, X21=l, X22=i, X23=j, X24=p, X25=t
-SUBI SP, SP, #64 
-STUR X19, [SP, #0]
-STUR X20, [SP, #8]
-STUR X21, [SP, #16]
-STUR X22, [SP, #24]
-STUR X23, [SP, #32]
-STUR X24, [SP, #40]
-STUR X25, [SP, #48]
-STUR LR, [SP, #56]
+// //   if (f >= l)
+// //   {
+// //     return;
+// //   }
+// //    a = X19, f=x20, l=x21, p=x22
+// //   p = partition(a, f, l);
+// //   quicksort_recurse(a, f, p - 1);
+// //   quicksort_recurse(a, p + 1, l);
+// // }
+// quicksort_recurse_begin:
+// // X19=a, X20=f, X21=l, X22=p
+// SUBI SP, SP, #40
+// STUR X19, [SP, #0]
+// STUR X20, [SP, #8]
+// STUR X21, [SP, #16]
+// STUR X22, [SP, #24]
+// STUR LR, [SP, #32]
 
-ADDI X19, X0, #0
-ADDI X20, X1, #0
-ADDI X21, X2, #0
+// ADDI X19, X0, #0
+// ADDI X20, X1, #0
+// ADDI X21, X2, #0
 
-LSL X9, X20, #3
-ADD X9, X9, X19
-LDUR X24, [X9, #0]
+// SUBS X9, X20, X21
+// B.GE quicksort_recurse_end
 
-ADDI X22, X20, #1
+// ADDI X0, X19, #0
+// ADDI X1, X20, #0
+// ADDI X2, X21, #0
+// BL partition_begin
+// ADDI X22, X0, #0
 
-ADDI X23, X21, #0
+// ADDI X0, X19, #0
+// ADDI X1, X20, #0
+// SUBI X2, X22, #1
+// BL quicksort_recurse_begin
 
-partition_loop:
-SUBS X9, X22, X23
-B.GT partition_loop_end
+// ADDI X0, X19, #0
+// ADDI X1, X22, #1
+// ADDI X2, X21, #0
+// BL quicksort_recurse_begin
 
-ADDI X0, X19, #0
-ADDI X1, X22, #0
-ADDI X2, X21, #0
-ADDI X3, X24, #0
-BL next_i_begin
-ADDI X22, X0, #0
+// quicksort_recurse_end:
+// LDUR LR, [SP, #32]
+// LDUR X22, [SP, #24]
+// LDUR X21, [SP, #16]
+// LDUR X20, [SP, #8]
+// LDUR X19, [SP, #0]
+// ADDI SP, SP, #40
+// BR LR
 
-ADDI X0, X19, #0
-ADDI X1, X23, #0
-ADDI X2, X20, #0
-ADDI X3, X24, #0
-BL next_j_begin
-ADDI X23, X0, #0
+// // int partition(int *a, int f, int l)
+// // {
+// //   int i, j, p, t;
 
-SUBS X9, X22, X23
-B.GE partition_loop_if_skip
+// //   p = a[f];
+// //   i = f + 1;
+// //   j = l;
+// //   // X19=a, X20=f, X21=l, X22=i, X23=j, X24=p, X25=t
+// //   while (i <= j)
+// //   {
+// //     i = next_i(a, i, l, p);
+// //     j = next_j(a, j, f, p);
 
-ADDI X0, X19, #0
-ADDI X1, X22, #0
-ADDI X2, X23, #0
-BL swap_begin
+// //     if (i < j)
+// //     {
+// //       swap(a, i, j);
+// //     }
+// //   }
 
-partition_loop_if_skip:
-B partition_loop
+// //   if (j != f)
+// //   {
+// //     swap(a, j, f);
+// //   }
 
-partition_loop_end:
+// //   return j;
+// // }
+// partition_begin:
+// // X19=a, X20=f, X21=l, X22=i, X23=j, X24=p, X25=t
+// SUBI SP, SP, #64 
+// STUR X19, [SP, #0]
+// STUR X20, [SP, #8]
+// STUR X21, [SP, #16]
+// STUR X22, [SP, #24]
+// STUR X23, [SP, #32]
+// STUR X24, [SP, #40]
+// STUR X25, [SP, #48]
+// STUR LR, [SP, #56]
 
-SUBS X9, X23, X20
-B.EQ partition_second_if_skip
+// ADDI X19, X0, #0
+// ADDI X20, X1, #0
+// ADDI X21, X2, #0
 
-ADDI X0, X19, #0
-ADDI X1, X23, #0
-ADDI X2, X20, #0
-BL swap_begin
+// LSL X9, X20, #3
+// ADD X9, X9, X19
+// LDUR X24, [X9, #0]
 
-partition_second_if_skip:
+// ADDI X22, X20, #1
 
-ADDI X0, X23, #0
+// ADDI X23, X21, #0
 
-LDUR LR, [SP, #56]
-LDUR X25, [SP, #48]
-LDUR X24, [SP, #40]
-LDUR X23, [SP, #32]
-LDUR X22, [SP, #24]
-LDUR X21, [SP, #16]
-LDUR X20, [SP, #8]
-LDUR X19, [SP, #0]
-ADDI SP, SP, #64
-BR LR
+// partition_loop:
+// SUBS X9, X22, X23
+// B.GT partition_loop_end
 
-end:
-DUMP
+// ADDI X0, X19, #0
+// ADDI X1, X22, #0
+// ADDI X2, X21, #0
+// ADDI X3, X24, #0
+// BL next_i_begin
+// ADDI X22, X0, #0
+
+// ADDI X0, X19, #0
+// ADDI X1, X23, #0
+// ADDI X2, X20, #0
+// ADDI X3, X24, #0
+// BL next_j_begin
+// ADDI X23, X0, #0
+
+// SUBS X9, X22, X23
+// B.GE partition_loop_if_skip
+
+// ADDI X0, X19, #0
+// ADDI X1, X22, #0
+// ADDI X2, X23, #0
+// BL swap_begin
+
+// partition_loop_if_skip:
+// B partition_loop
+
+// partition_loop_end:
+
+// SUBS X9, X23, X20
+// B.EQ partition_second_if_skip
+
+// ADDI X0, X19, #0
+// ADDI X1, X23, #0
+// ADDI X2, X20, #0
+// BL swap_begin
+
+// partition_second_if_skip:
+
+// ADDI X0, X23, #0
+
+// LDUR LR, [SP, #56]
+// LDUR X25, [SP, #48]
+// LDUR X24, [SP, #40]
+// LDUR X23, [SP, #32]
+// LDUR X22, [SP, #24]
+// LDUR X21, [SP, #16]
+// LDUR X20, [SP, #8]
+// LDUR X19, [SP, #0]
+// ADDI SP, SP, #64
+// BR LR
+
+// end:
+// DUMP
+test:
+ADDI X0, X0, #-1
+B test
+MUL X4,X5,X20
