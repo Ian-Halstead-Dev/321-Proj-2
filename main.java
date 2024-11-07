@@ -121,17 +121,19 @@ class Main {
 
       if(instructionMap.containsKey(instruction.op_6)) {
         String instName = instructionMap.get(instruction.op_6);
-        if(!labelMap.containsKey(i+instruction.BR_address)) {
+        int convertedBRAddress = convertTo2s(instruction.BR_address, 26);
+        if(!labelMap.containsKey(i+convertedBRAddress)) {
           labelCount++;
-          labelMap.put(i+instruction.BR_address, labelCount );
+          labelMap.put(i+convertedBRAddress, labelCount );
         }
-        strToPrint.add(instName + " label_" + labelMap.get(i+instruction.BR_address ));
+        strToPrint.add(instName + " label_" + labelMap.get(i+convertedBRAddress ));
       }
 
       else if (instructionMap.containsKey(instruction.op_8)) {
         // CB Type
         
         String instName;
+        int convertedC_BR_Address = convertTo2s(instruction.C_BR_address, 19);
         if(instruction.op_8 == 0b01010100) {
           instName = ("B."+conditionMap.get(instruction.rd));
         }
@@ -148,7 +150,7 @@ class Main {
       else if (instructionMap.containsKey(instruction.op_10)) {
         String instructionString = instructionMap.get(instruction.op_10);
         //I Type
-        strToPrint.add(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", #" + instruction.aluImmediate);
+        strToPrint.add(instructionString + " X" + instruction.rd + ", X" + instruction.rn + ", #" + convertTo2s(instruction.aluImmediate,12));
       }
       else if (instructionMap.containsKey(instruction.op_11)) {
         String instructionString = instructionMap.get(instruction.op_11);
@@ -190,7 +192,22 @@ class Main {
       System.out.println(strToPrint.get(i));
     }  
   }
+  
+  public static int convertTo2s(int num, int bits) {
+    int mask = (1 << bits) - 1; 
+    int maskedNum = num & mask;
+
+    int signBit = 1 << (bits - 1);
+    if ((maskedNum & signBit) != 0) {
+        maskedNum -= (1 << bits);
+    }
+
+    return maskedNum;
 }
+
+}
+
+
 
 // 1001 0001 0010 0000 0010 0011 1110 0000
 // 00010111111111111111111111111111
