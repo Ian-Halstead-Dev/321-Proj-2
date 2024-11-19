@@ -10,7 +10,7 @@ import java.util.Map;
 class Main {
   public static Map<Integer, String> makeConditionMap() {
     HashMap<Integer, String> conditionMap = new HashMap<>();
-
+    // test
     // Add the values to the hashmap
     conditionMap.put(0x0, "EQ");
     conditionMap.put(0x1, "NE");
