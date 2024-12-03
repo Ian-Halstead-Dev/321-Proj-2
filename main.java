@@ -103,16 +103,18 @@ class Main {
     for(int i = 0; i < instructions.length; i++) {
       InstructionData instruction = new InstructionData(instructions[i]);
 
+              // Handle 6-bit opcode instructions
       if(instructionMap.containsKey(instruction.op_6)) {
-        // Handle 6-bit opcode instructions
         String instName = instructionMap.get(instruction.op_6);
         int convertedBRAddress = convertTo2s(instruction.BR_address, 26);
-        if(!labelMap.containsKey(i + convertedBRAddress)) {
+        if(!labelMap.containsKey(i+convertedBRAddress)) {
           labelCount++;
-          labelMap.put(i + convertedBRAddress, labelCount);
+          labelMap.put(i+convertedBRAddress, labelCount );
         }
-        strToPrint.add(instName + " label_" + labelMap.get(i + convertedBRAddress));
+        strToPrint.add(instName + " label_" + labelMap.get(i+convertedBRAddress ));
       }
+
+    
 
       else if (instructionMap.containsKey(instruction.op_8)) {
         // Handle 8-bit opcode instructions (e.g., CB-type)
@@ -129,11 +131,11 @@ class Main {
         } else {
           // Regular CB instruction
           instName = instructionMap.get(instruction.op_8);
-          if(!labelMap.containsKey(i + convertedC_BR_Address)) {
+          if(!labelMap.containsKey(i+convertedC_BR_Address)) {
             labelCount++;
-            labelMap.put(i + convertedC_BR_Address, labelCount);
+            labelMap.put(i+convertedC_BR_Address, labelCount );
           }
-          strToPrint.add(instName + " " + printRegister(instruction.rd) + ", label_" + labelMap.get(i + convertedC_BR_Address));
+          strToPrint.add(instName + " " + printRegister(instruction.rd)+ ", label_" + labelMap.get(i+convertedC_BR_Address ));
         }
       }
 
@@ -190,16 +192,26 @@ class Main {
   }
 
   // Converts a value to two's complement representation
-  public static int convertTo2s(int number, int length) {
-    if((number & (1 << (length - 1))) != 0) {
-      return ((1 << (length - 1)) ^ number) * -1;
-    } else {
-      return number;
+  public static int convertTo2s(int num, int bits) {
+    int mask = (1 << bits) - 1; 
+    int maskedNum = num & mask;
+
+    int signBit = 1 << (bits - 1);
+    if ((maskedNum & signBit) != 0) {
+        maskedNum -= (1 << bits);
     }
+
+    return maskedNum;
   }
 
   // Prints a register in assembly syntax
   public static String printRegister(int regNum) {
-    return regNum < 31 ? "X" + regNum : "ZR";
+    return switch (regNum) {
+      case 28 -> "SP";
+      case 29 -> "FP";
+      case 30 -> "LR";
+      case 31 -> "XZR";
+      default -> "X" + regNum;
+  };
   }
 }
